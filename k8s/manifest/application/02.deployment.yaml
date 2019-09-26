@@ -1,0 +1,58 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: webapp
+  labels:
+    app: webapp
+    env: dev
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: webapp
+  template:
+    metadata:
+      labels:
+        name: webapp
+    spec:
+      containers:
+        - image: fazrie/code:0.0.1
+          name: webapp
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+              name: app-port
+          imagePullPolicy: Always    
+          volumeMounts:
+            - name: code
+              mountPath: /webapp
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - cp
+                  - "-r"
+                  - "/code/."
+                  - "/webapp" 
+        - image: nginx:1.17.4
+          name: nginx
+          ports:
+            - containerPort: 80
+              protocol: TCP
+              name: nginx-port
+          imagePullPolicy: Always    
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/conf.d/site.conf 
+              subPath: site.conf
+            - name: code
+              mountPath: /webapp
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+        - name: code
+          emptyDir: {}    
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst

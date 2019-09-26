@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "webapp.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "webapp.name" . }}
+    helm.sh/chart: {{ include "webapp.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+        name: {{ include "webapp.name" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "webapp.name" . }}
+    spec:
+      containers:
+        - image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          name: {{ .Chart.Name }}
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+              name: app-port
+          imagePullPolicy: {{ .Values.image.pullPolicy }}    
+          volumeMounts:
+            - name: code
+              mountPath: /webapp
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - cp
+                  - "-r"
+                  - "/code/."
+                  - "/webapp" 
+        - image: "{{ .Values.imageNginx.repository }}:{{ .Values.imageNginx.tag }}"
+          name: nginx
+          ports:
+            - containerPort: 80
+              protocol: TCP
+              name: nginx-port
+          imagePullPolicy: {{ .Values.imageNginx.pullPolicy }}    
+          volumeMounts:
+            - name: nginx-config-volume
+              mountPath: /etc/nginx/conf.d/site.conf 
+              subPath: site.conf
+            - name: code
+              mountPath: /webapp
+      volumes:
+        - name: nginx-config-volume
+          configMap:
+            name: nginx-config
+        - name: code
+          emptyDir: {}    
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst

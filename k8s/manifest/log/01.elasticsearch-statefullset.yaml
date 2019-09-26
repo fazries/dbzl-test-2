@@ -1,0 +1,140 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: elasticsearch-pd
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+# service headless
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-cluster
+  namespace: infra
+  labels:
+    service: elasticsearch
+spec:
+  clusterIP: None
+  ports:
+  - port: 9200
+    name: transport
+  - port: 9300
+    name: node-to-node
+  selector:
+    app: elasticsearch
+
+---
+
+# service lb
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-loadbalancer
+  annotations:
+    cloud.google.com/load-balancer-type: Internal
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+  - name: http
+    port: 80
+    targetPort: 9200
+  type: LoadBalancer
+    
+
+---
+
+apiVersion: apps/v1 
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  labels:
+    app: elasticsearch
+    type: log
+  namespace: infra
+spec:
+  serviceName: es
+  replicas: 4
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      terminationGracePeriodSeconds: 300      
+      initContainers:
+      - name: fix-the-volume-permission
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -c
+          - chown -R 1000:1000 /usr/share/elasticsearch/data
+        securityContext:
+          privileged: true    
+        volumeMounts:
+        - name: data-es
+          mountPath: /usr/share/elasticsearch/data
+      - name: init-sysctl
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl","-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
+      - name: increase-the-ulimit
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","ulimit -n 65536"]
+        securityContext:
+          privileged: true    
+      containers:
+      - name: elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.7.2
+        ports:
+        - containerPort: 9200
+          name: http
+        - containerPort: 9300
+          name: tcp
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 500m
+            memory: 2Gi
+        env:
+          - name: cluster.name
+            value: elasticsearch-log-cluster
+          - name: node.name
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          # only work for ES < 7.0
+          # - name: discovery.seed_hosts
+          #   value: "elasticsearch-cluster"      
+          # - name: cluster.initial_master_nodes
+          #   value: elasticsearch-0
+          # only work for ES < 6.0
+          - name: discovery.zen.ping.unicast.hosts
+            value: "elasticsearch-cluster"      
+          - name: thread_pool.bulk.queue_size
+            value: "2000"
+          - name: ES_JAVA_OPTS
+            value: -Xms1g -Xmx1g
+        volumeMounts:
+          - name: data-es
+            mountPath: /usr/share/elasticsearch/data      
+  volumeClaimTemplates:
+  - metadata:
+      name: data-es
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: elasticsearch-pd
+      resources:
+        requests:
+          storage: 1Gi  
