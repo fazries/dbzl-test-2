@@ -1,3 +1,4 @@
 helm create webapp
 helm template webapp
+helm install webapp -n webapp
 helm upgrade webapp webapp
