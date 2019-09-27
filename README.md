@@ -66,8 +66,7 @@ nginx server and all deployment including configuration will be done by `helm` c
 cd dbzl-test-2
 cd k8s/helm
 ```
-there's a chart named webapp. you can update the parameters via values.yaml
-`webapp`
+there's a chart named webapp. you can update the parameters via `values.yaml`
 
 ### running the deployment
 ```
@@ -83,7 +82,7 @@ it will create an kubernetes object:
 
 or you can try to install using manifest file at `dbzl-test-2/k8s/manifest/application`
 service of the application can be access via
-
+### http://af547bafce12811e9b8570a47d626478-1348575436.eu-west-1.elb.amazonaws.com
 
 
 ## log management
