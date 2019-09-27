@@ -4,6 +4,7 @@ metadata:
   name: webapp
   labels:
     service: webapp
+    {{ .Values.tag.name }}: {{ .Values.tag.value}}      
   namespace: default
 spec:
   type: {{ .Values.service.type }}    

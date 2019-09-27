@@ -4,7 +4,7 @@ metadata:
   name: webapp
   labels:
     app: webapp
-    env: dev
+    sre_candidate: setyadi
   namespace: default
 spec:
   replicas: 2

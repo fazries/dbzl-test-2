@@ -7,6 +7,7 @@ metadata:
     helm.sh/chart: {{ include "webapp.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{ .Values.tag.name }}: {{ .Values.tag.value}}      
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:

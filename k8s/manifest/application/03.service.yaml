@@ -4,6 +4,7 @@ metadata:
   name: webapp
   labels:
     service: webapp
+    sre_candidate: setyadi
   namespace: default
 spec:
   type: LoadBalancer

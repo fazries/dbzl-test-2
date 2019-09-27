@@ -4,6 +4,8 @@ metadata:
   annotations:
   name: hpa-webapp
   namespace: default
+  labels:
+    sre_candidate: setyadi
 spec:
   maxReplicas: 4
   minReplicas: 1

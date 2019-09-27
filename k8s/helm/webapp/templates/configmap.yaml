@@ -2,5 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: nginx-config
+  labels:
+    {{ .Values.tag.name }}: {{ .Values.tag.value}}      
 data:
   {{- toYaml .Values.configmap.data | nindent 2 }}
