@@ -29,6 +29,10 @@ spec:
           volumeMounts:
             - name: code
               mountPath: /webapp
+          resources:
+            requests:
+              cpu: 500m
+              memory: 128m
           lifecycle:
             postStart:
               exec:
@@ -50,6 +54,10 @@ spec:
               subPath: site.conf
             - name: code
               mountPath: /webapp
+          resources:
+            requests:
+              cpu: 500m
+              memory: 128m
       volumes:
         - name: nginx-config-volume
           configMap:
