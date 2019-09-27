@@ -19,8 +19,13 @@ imageNginx:
   pullPolicy: IfNotPresent
 
 service:
+  name: webapp-svc
   type: LoadBalancer
   port: 80
+
+ingress:
+  name: webapp-ing
+  host: webapp.dbzl.test  
 
 configmap:
   data:

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: webapp
+  name: {{ .Values.service.name }}
   labels:
     service: webapp
     {{ .Values.tag.name }}: {{ .Values.tag.value}}      
