@@ -3,8 +3,8 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: sebp/elk
-  tag: latest
+  repository: docker.elastic.co/elasticsearch/elasticsearch
+  tag: 6.7.2
   pullPolicy: IfNotPresent
 
 nameOverride: ""
@@ -14,14 +14,25 @@ service:
   type: LoadBalancer
   port: 80
   target: 5601
+  selector: elasticsearch
 
 elk:
   storage:
     name: elasticsearch-pd
     size: 1G
   resource:
-    cpu_req: 200
+    cpu_req: 200m
     mem_req: 4Gi
-    cpu_lim: 200
+    cpu_lim: 200m
     mem_lim: 4Gi
-    
+
+kibana:
+  image:
+    repository: docker.elastic.co/elasticsearch/kibana
+    tag: 6.7.2
+    pullPolicy: IfNotPresent
+  resource:
+    cpu_req: 100m
+    mem_req: 1Gi
+    cpu_lim: 1000m
+    mem_lim: 1Gi  

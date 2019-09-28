@@ -1,18 +1,32 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "elk.fullname" . }}
-  labels:
-    app.kubernetes.io/name: {{ include "elk.name" . }}
-    helm.sh/chart: {{ include "elk.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+  name: "{{ .Values.service.selector }}-loadbalancer"
+  annotations:
+    cloud.google.com/load-balancer-type: Internal
 spec:
-  type: {{ .Values.service.type }}
+  selector:
+    app: {{ .Values.service.selector }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: {{ .Values.service.target }} 
       protocol: TCP
       name: http
+  type: {{ .Values.service.type }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ .Values.service.selector }}-cluster"
+  labels:
+    service: elasticsearch
+spec:
+  clusterIP: None
+  ports:
+  - port: 9200
+    name: transport
+  - port: 9300
+    name: node-to-node
   selector:
-    run: {{ include "elk.name" . }}
+    app: {{ .Values.service.selector }}

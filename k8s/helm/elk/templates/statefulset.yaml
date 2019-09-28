@@ -1,67 +1,59 @@
-apiVersion: apps/v1
+apiVersion: apps/v1 
 kind: StatefulSet
 metadata:
-  name: {{ include "elk.fullname" . }}
+  name: elasticsearch
   labels:
     app.kubernetes.io/name: {{ include "elk.name" . }}
     helm.sh/chart: {{ include "elk.chart" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}  
+    app: elasticsearch
+    type: log
 spec:
-  serviceName: {{ include "elk.fullname" . }} 
+  serviceName: es
+  replicas: 3
   selector:
     matchLabels:
-      run: elk
+      app: {{ .Values.service.selector }}
   template:
     metadata:
       labels:
-        run: elk
+        app: {{ .Values.service.selector }}
     spec:
+      terminationGracePeriodSeconds: 300      
       initContainers:
       - name: fix-the-volume-permission
         image: busybox
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command:
           - sh
           - -c
-          - chown -R 1000:1000 /var/lib/elasticsearch
+          - chown -R 1000:1000 /usr/share/elasticsearch/data
         securityContext:
-          privileged: true
+          privileged: true    
         volumeMounts:
         - name: data-es
-          mountPath: /var/lib/elasticsearch 
+          mountPath: /usr/share/elasticsearch/data
+      - name: init-sysctl
+        image: busybox
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["sysctl","-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true
       - name: increase-the-ulimit
         image: busybox
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["sh","-c","ulimit -n 65536"]
         securityContext:
           privileged: true    
-      - name: setvm-max-map-count
-        image: busybox
-        imagePullPolicy: IfNotPresent
-        command: ["sysctl", "-w", "vm.max_map_count=262144"]
-        securityContext:
-          privileged: true    
       containers:
-      - name: elk
+      - name: elasticsearch
         image: {{ .Values.image.repository }}:{{ .Values.image.tag}}
-        imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 9200 
-          name: kibana
-          protocol: TCP
-        - containerPort: 5601 
-          name: es
-          protocol: TCP
-        env:
-        - name: LOGSTASH_START
-          value: "0"
-        - name: MAX_OPEN_FILES
-          value: "65536"
-        - name: MAX_MAP_COUNT
-          value: "262144"  
-        - name: ES_HEAP_SIZE
-          value: "2g"  
+        - containerPort: 9200
+          name: http
+        - containerPort: 9300
+          name: tcp
         resources:
           requests:
             cpu: {{ .Values.elk.resource.cpu_req }}
@@ -69,16 +61,29 @@ spec:
           limits:
             cpu: {{ .Values.elk.resource.cpu_lim }}
             memory: {{ .Values.elk.resource.mem_lim }}
+        env:
+          - name: cluster.name
+            value: elasticsearch-log-cluster
+          - name: node.name
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: discovery.zen.ping.unicast.hosts
+            value: "elasticsearch-cluster"      
+          - name: thread_pool.bulk.queue_size
+            value: "2000"
+          - name: ES_JAVA_OPTS
+            value: -Xms512m -Xmx512m
         volumeMounts:
           - name: data-es
-            mountPath: /var/lib/elasticsearch 
+            mountPath: /usr/share/elasticsearch/data      
   volumeClaimTemplates:
-    - metadata:
-        name: data-es
-      spec:
-        accessModes:
-          - ReadWriteOnce
-        storageClassName: {{ .Values.elk.storage.name }}
-        resources:
-          requests:
-            storage: {{ .Values.elk.storage.size }}  
+  - metadata:
+      name: data-es
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: {{ .Values.elk.storage.name }}
+      resources:
+        requests:
+          storage: {{ .Values.elk.storage.size }}  
