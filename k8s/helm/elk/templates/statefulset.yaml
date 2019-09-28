@@ -36,6 +36,12 @@ spec:
         command: ["sh","-c","ulimit -n 65536"]
         securityContext:
           privileged: true    
+      - name: setvm-max-map-count
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sysctl", "-w", "vm.max_map_count=262144"]
+        securityContext:
+          privileged: true    
       containers:
       - name: elk
         image: {{ .Values.image.name }}:{{ .Values.image.tag}}
