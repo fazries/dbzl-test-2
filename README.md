@@ -66,7 +66,7 @@ nginx server and all deployment including configuration will be done by `helm` c
 cd dbzl-test-2
 cd k8s/helm
 ```
-there's a chart named webapp. you can update the parameters via `values.yaml`
+there's a chart named `webapp`. you can update the parameters via `values.yaml`
 
 ### running the deployment
 ```
@@ -84,11 +84,32 @@ or you can try to install using manifest file at `dbzl-test-2/k8s/manifest/appli
 service of the application can be access via
 ### http://af547bafce12811e9b8570a47d626478-1348575436.eu-west-1.elb.amazonaws.com
 
-
 ## log management
+## deploying using helm cart
+```
+cd dbzl-test-2
+cd k8s/helm
+```
+there's a chart named `elk`. you can update the parameters via `values.yaml`
+
+### running the deployment
+```
+helm install elk -n elk
+```
+it will create a kubernetes object:
+- statefulset pod of elasticsearch and kibana
+- services
+
+service of kibana can be access via
+###
+
+## manual installation using manifest file
 using Elasticsearch, Fluentd and Kibana
 installation:
 ```
-cd dbzl-test-2/k8s/manifest/log
-kubectl apply -f 01.elasticsearch-statefullset.yaml  02.fluentd-rbac.yaml  03.fluentd.yaml  04.kibana.yaml
+cd dbzl-test-2/k8s/manifest/fluentd
+kubectl apply -f 00.fluentd-rbac.yaml  01.fluentd.yaml
+
+cd dbzl-test-2/k8s/manifest/elk
+kubectl apply -f 00.elk
 ```
