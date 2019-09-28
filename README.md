@@ -119,7 +119,9 @@ kubectl apply -f 01.elasticsearch-statefullset.yaml  -f 02.fluentd.yaml -f 03.ki
 ```
 
 # Alerting
+
+The installation process documented at `k8s/manifest/alert` on `elastalert-manual.txt` and `roles.yaml` 
 using elastalert for read the log from elastic search, and generate notification into a slack.
-join slack channel at 
+join slack channel for more details
 
 ### https://join.slack.com/t/dbzl-alerting/shared_invite/enQtNzcwNDI0ODAxMDI1LTExNDM3MGI1ZmM0ODdkNDA4NDM0ODE5ZDcyZjkyOWI5OTVhMjBjN2JmZmM1YmFiNzgwYzI0MzVhNjE4MTZjMWI
