@@ -85,7 +85,7 @@ it will create an kubernetes object:
 
 or you can try to install using manifest file at `dbzl-test-2/k8s/manifest/application`
 service of the application can be access via
-### aa5790745e1ea11e9b6ec067b079aa35-508921207.eu-west-1.elb.amazonaws.com 
+### http://aa5790745e1ea11e9b6ec067b079aa35-508921207.eu-west-1.elb.amazonaws.com 
 
 ## log management
 ## deploying using helm cart
@@ -117,3 +117,9 @@ installation:
 cd dbzl-test-2/k8s/manifest/elk
 kubectl apply -f 01.elasticsearch-statefullset.yaml  -f 02.fluentd.yaml -f 03.kibana.yaml 
 ```
+
+# Alerting
+using elastalert for read the log from elastic search, and generate notification into a slack.
+join slack channel at 
+
+### https://join.slack.com/t/dbzl-alerting/shared_invite/enQtNzcwNDI0ODAxMDI1LTExNDM3MGI1ZmM0ODdkNDA4NDM0ODE5ZDcyZjkyOWI5OTVhMjBjN2JmZmM1YmFiNzgwYzI0MzVhNjE4MTZjMWI
