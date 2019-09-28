@@ -3,7 +3,7 @@
 ### create a control plane and worker node
 ```
 eksctl create cluster \
---name sre-setyadi \
+--name cluster-sre-setyadi \
 --version 1.14 \
 --nodegroup-name standard-workers \
 --node-type t3.medium \
@@ -13,23 +13,26 @@ eksctl create cluster \
 --node-ami auto
 
 eksctl create nodegroup \
---cluster sre-setyadi \
+--cluster cluster-sre-setyadi \
 --version auto \
---name dbzl-workers-1 \
+--name sre-setyadi-2 \
 --node-type m5.large \
 --node-ami auto \
 --nodes 3 \
 --nodes-min 1 \
---nodes-max 6
+--nodes-max 3
 ```
 check the cluster condition
 ```
-aws eks --region eu-west-1 describe-cluster --name sre-setyadi --query cluster.status
+aws eks --region eu-west-1 describe-cluster --name cluster-sre-setyadi --query cluster.status
 ```
 update kubeconfig
 ```
-aws eks --region eu-west-1 update-kubeconfig --name sre-setyadi
+aws eks --region eu-west-1 update-kubeconfig --name cluster-sre-setyadi
 ```
+
+it will creating a control plane and node worker
+
 
 ### ingress installation
 ```
@@ -73,7 +76,7 @@ there's a chart named `webapp`. you can update the parameters via `values.yaml`
 helm install webapp -n webapp
 ```
 it will create an kubernetes object:
-- apps pod
+- pods webapps
 - deployment
 - services
 - configmaps
@@ -82,7 +85,7 @@ it will create an kubernetes object:
 
 or you can try to install using manifest file at `dbzl-test-2/k8s/manifest/application`
 service of the application can be access via
-### http://af547bafce12811e9b8570a47d626478-1348575436.eu-west-1.elb.amazonaws.com
+### aa5790745e1ea11e9b6ec067b079aa35-508921207.eu-west-1.elb.amazonaws.com 
 
 ## log management
 ## deploying using helm cart
@@ -102,15 +105,15 @@ it will create a kubernetes object:
 - services
 
 service of kibana can be access via
-###
+### http://a35ff89d3e20611e9b6ec067b079aa35-2130241691.eu-west-1.elb.amazonaws.com/app/kibana#/home?_g=()
+
+kibana search webapp
+### http://a35ff89d3e20611e9b6ec067b079aa35-2130241691.eu-west-1.elb.amazonaws.com/app/kibana#/discover?_g=()&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:'40c86a10-e209-11e9-983d-537ffefdb259',key:kubernetes.pod_name,negate:!f,params:(query:webapp-,type:phrase),type:phrase,value:webapp-),query:(match:(kubernetes.pod_name:(query:webapp-,type:phrase))))),index:'40c86a10-e209-11e9-983d-537ffefdb259',interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))
 
 ## manual installation using manifest file
 using Elasticsearch, Fluentd and Kibana
 installation:
 ```
-cd dbzl-test-2/k8s/manifest/fluentd
-kubectl apply -f 00.fluentd-rbac.yaml  01.fluentd.yaml
-
 cd dbzl-test-2/k8s/manifest/elk
-kubectl apply -f 00.elk
+kubectl apply -f 01.elasticsearch-statefullset.yaml  -f 02.fluentd.yaml -f 03.kibana.yaml 
 ```

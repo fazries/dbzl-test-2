@@ -44,7 +44,7 @@ spec:
           privileged: true    
       containers:
       - name: elk
-        image: {{ .Values.image.name }}:{{ .Values.image.tag}}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag}}
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9200 
