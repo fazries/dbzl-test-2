@@ -1,0 +1,105 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: elasticsearch-pd
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+reclaimPolicy: Delete
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elk
+  labels:
+    type: log
+    app: elk
+spec:
+  serviceName: elk
+  selector:
+    matchLabels:
+      run: elk
+  template:
+    metadata:
+      labels:
+        run: elk
+    spec:
+      initContainers:
+      - name: fix-the-volume-permission
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command:
+          - sh
+          - -c
+          - chown -R 1000:1000 /var/lib/elasticsearch
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data-es
+          mountPath: /var/lib/elasticsearch 
+      - name: increase-the-ulimit
+        image: busybox
+        imagePullPolicy: IfNotPresent
+        command: ["sh","-c","ulimit -n 65536"]
+        securityContext:
+          privileged: true    
+      containers:
+      - name: elk
+        image: sebp/elk:latest 
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9200 
+          name: kibana
+          protocol: TCP
+        - containerPort: 5601 
+          name: es
+          protocol: TCP
+        env:
+        - name: LOGSTASH_START
+          value: "0"
+        - name: MAX_OPEN_FILES
+          value: "65536"
+        - name: MAX_MAP_COUNT
+          value: "262144"  
+        - name: ES_HEAP_SIZE
+          value: "2g"  
+        resources:
+          requests:
+            cpu: 200m
+            memory: 4Gi
+          limits:
+            cpu: 200m
+            memory: 4Gi
+        volumeMounts:
+          - name: data-es
+            mountPath: /var/lib/elasticsearch 
+  volumeClaimTemplates:
+    - metadata:
+        name: data-es
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: elasticsearch-pd
+        resources:
+          requests:
+            storage: 1Gi  
+      
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: elk
+  labels:
+    service: elk
+spec:
+  type: LoadBalancer
+  selector:
+    run: elk
+  ports:
+  - name: elk
+    port: 80
+    targetPort: 5601
+    protocol: TCP
