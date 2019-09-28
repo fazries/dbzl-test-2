@@ -1,0 +1,43 @@
+rules:
+   400_alert: |-
+     ---
+     name: 400_error
+     type: frequency
+     index: logstash-*
+     num_events: 100
+     timeframe:
+       minutes: 60
+     filter:
+     - query:
+         query_string:
+           query: "kubernetes.pod_name: webapp* AND log: 40*"
+     alert:
+     - "slack"
+     slack:
+     slack_webhook_url: "https://hooks.slack.com/services/TNHAWPQAX/BNNCJBCAD/Z6RzejVROKdZCbgXXXXXXXXX"
+     slack_emoji_override: ":robot_face:"
+     slack_msg_color: "warning"
+     alert_text: "You can check the alert dashboard on Kibana"
+     alert_subject: "Elastalert event: More than 100 request with 4XX ERROR has been detected in the last 60 minute."
+     alert_text_type: exclude_fields
+   500_alert: |-
+     ---
+     name: 500_error
+     type: frequency
+     index: logstash-*
+     num_events: 50
+     timeframe:
+       minutes: 5
+     filter:
+     - query:
+         query_string:
+           query: "kubernetes.pod_name: webapp* AND log: 50*"
+     alert:
+     - "slack"
+     slack:
+     slack_webhook_url: "https://hooks.slack.com/services/TNHAWPQAX/BNNCJBCAD/Z6RzejVROKdZCbgXXXXXXXXX"
+     slack_emoji_override: ":robot_face:"
+     slack_msg_color: "warning"
+     alert_text: "You can check the alert dashboard on Kibana:"
+     alert_subject: "Elastalert event: More than 50 request with 5XX ERROR has been detected in the last 5 minute."
+     alert_text_type: exclude_fields

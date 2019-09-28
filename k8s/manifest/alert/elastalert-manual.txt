@@ -1,1 +1,2 @@
 helm install --name elastalert stable/elastalert --set elasticsearch.host=elasticsearch-loadbalancer --set writebackIndex=elastalert --namespace default
+helm upgrade elastalert stable/elastalert -f rules.yaml
