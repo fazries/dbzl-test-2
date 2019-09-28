@@ -98,6 +98,7 @@ helm install elk -n elk
 ```
 it will create a kubernetes object:
 - statefulset pod of elasticsearch and kibana
+- persistent volume
 - services
 
 service of kibana can be access via
