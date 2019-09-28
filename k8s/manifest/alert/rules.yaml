@@ -1,3 +1,6 @@
+elasticsearch:
+   host: 10.100.67.106  
+writebackIndex: elastalert
 rules:
    400_alert: |-
      ---
@@ -14,7 +17,7 @@ rules:
      alert:
      - "slack"
      slack:
-     slack_webhook_url: "https://hooks.slack.com/services/TNHAWPQAX/BNNCJBCAD/Z6RzejVROKdZCbgXXXXXXXXX"
+     slack_webhook_url: "https://hooks.slack.com/services/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"
      slack_emoji_override: ":robot_face:"
      slack_msg_color: "warning"
      alert_text: "You can check the alert dashboard on Kibana"
@@ -35,7 +38,7 @@ rules:
      alert:
      - "slack"
      slack:
-     slack_webhook_url: "https://hooks.slack.com/services/TNHAWPQAX/BNNCJBCAD/Z6RzejVROKdZCbgXXXXXXXXX"
+     slack_webhook_url: "https://hooks.slack.com/services/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"
      slack_emoji_override: ":robot_face:"
      slack_msg_color: "warning"
      alert_text: "You can check the alert dashboard on Kibana:"

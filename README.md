@@ -121,6 +121,7 @@ kubectl apply -f 01.elasticsearch-statefullset.yaml  -f 02.fluentd.yaml -f 03.ki
 # Alerting
 
 The installation process documented at `k8s/manifest/alert` on `elastalert-manual.txt` and `roles.yaml` 
+send an alert when get 4xx error in one hours and 5xx error in 5 minutes
 using elastalert for read the log from elastic search, and generate notification into a slack.
 join slack channel for more details
 
